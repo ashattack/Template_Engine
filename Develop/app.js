@@ -9,9 +9,16 @@ const OUTPUT_DIR = path.resolve(__dirname, "output");
 const outputPath = path.join(OUTPUT_DIR, "team.html");
 
 const render = require("./lib/htmlRenderer");
+const { ENGINE_METHOD_RSA } = require("constants");
+
+var managerInfo;
+var engineerCount;
+var internCount;
+var employeeList;
+var internList;
 
 function appMenu() {
-    function createManager() {
+    async function createManager() {
         inquirer.prompt([
             {
                 type: 'input',
@@ -39,11 +46,35 @@ function appMenu() {
             }
 
         ]).then(answers => {
-            const Manager = new Manager(answers.managerName, answers.managerId, answers.managerEmail, answers.managerOfficeNumber)
-            console.log(manager);
+            managerInfo = new Manager(answers.managerName, answers.managerId, answers.managerEmail, answers.managerOfficeNumber)
+            console.log(managerInfo);
         })
     }
-    createManager();
+    async function getEmployeeNums() {
+        await inquirer.prompt([
+            {
+                type: 'input',
+                name: 'Intern',
+                message: 'How many interns would you like on your team?'
+
+            },
+            {
+                type: 'input',
+                name: 'Engineer',
+                message: 'How many engineers would you like on your team?'
+
+            }
+
+
+        ]).then(answers => {
+            engineerCount = answers.Engineer;
+            internCount = answers.Intern;
+
+        })
+    }
+
+     createManager();
+     getEmployeeNums();
 
 }
 
