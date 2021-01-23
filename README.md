@@ -11,6 +11,6 @@ node app.js
 ```
 ### Walkthrough Video:
 
-* A walkthrough video that demonstrates the functionality of the README generator:
+* A walkthrough video that demonstrates the functionality of the Template Engine:
 [Walkthrough video using Screencastify](https://drive.google.com/file/d/12diujvEnpfefXAM6RMAECzVbPWta1nl7/view)
 
