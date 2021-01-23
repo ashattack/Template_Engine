@@ -4,13 +4,15 @@ const Intern = require("./lib/Intern");
 const inquirer = require("inquirer");
 const path = require("path");
 const fs = require("fs");
+const validate = require("validator");
 
 const OUTPUT_DIR = path.resolve(__dirname, "output");
 const outputPath = path.join(OUTPUT_DIR, "team.html");
 
 const render = require("./lib/htmlRenderer");
 const { ENGINE_METHOD_RSA } = require("constants");
-
+const { create } = require("domain");
+var array = []
 var managerInfo;
 var engineerCount;
 var internCount;
@@ -18,67 +20,169 @@ var employeeList;
 var internList;
 
 function appMenu() {
-    async function createManager() {
-        inquirer.prompt([
-            {
-                type: 'input',
-                name: 'managerName',
-                message: 'What is your managers Name?'
-
-            },
-            {
-                type: 'input',
-                name: 'managerId',
-                message: 'What is your managers id?'
-
-            },
-            {
-                type: 'input',
-                name: 'managerEmail',
-                message: 'What is your managers email?'
-
-            },
-            {
-                type: 'input',
-                name: 'managerOfficeNumber',
-                message: 'What is your managers office number?'
-
-            }
-
-        ]).then(answers => {
-            managerInfo = new Manager(answers.managerName, answers.managerId, answers.managerEmail, answers.managerOfficeNumber)
-            console.log(managerInfo);
-        })
-    }
-    async function getEmployeeNums() {
-        await inquirer.prompt([
-            {
-                type: 'input',
-                name: 'Intern',
-                message: 'How many interns would you like on your team?'
-
-            },
-            {
-                type: 'input',
-                name: 'Engineer',
-                message: 'How many engineers would you like on your team?'
-
-            }
-
-
-        ]).then(answers => {
-            engineerCount = answers.Engineer;
-            internCount = answers.Intern;
-
-        })
-    }
-
-     createManager();
-     getEmployeeNums();
-
+    createManager();
 }
 
+function createManager() {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'managerName',
+            message: 'What is your managers Name?'
+            
+
+        },
+        {
+            type: 'input',
+            name: 'managerId',
+            message: 'What is your managers id?'
+
+        },
+        {
+            type: 'input',
+            name: 'managerEmail',
+            message: 'What is your managers email?',
+            validate: (email) => {
+                if (validate.isEmail(email)) {
+                    return true
+                } else {
+                    return 'Please enter an email'
+                }
+
+
+            }
+
+        },
+        {
+            type: 'input',
+            name: 'managerOfficeNumber',
+            message: 'What is your managers office number?',
+            validate: (number) => {
+                if (isNaN(number)) {
+                    return "Please enter a number"
+                } else {
+                    return true;
+                }
+
+            }
+        },
+        {
+            type: 'list',
+            name: 'managerEmployee',
+            message: 'Do you want to add more employees?',
+            choices: ['yes', 'no']
+
+        }
+
+
+    ]).then(answers => {
+        managerInfo = new Manager(answers.managerName, answers.managerId, answers.managerEmail, answers.managerOfficeNumber)
+        console.log(managerInfo);
+        array.push(managerInfo)
+        if (answers.managerEmployee == 'yes') {
+            createEmployee();
+        } else {
+            createHTML();
+        }
+        //createTeam(); will ask user what type of worker they want to build
+    })
+}
+
+
+function createEmployee() {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'employeeName',
+            message: 'What is your employee name?'
+
+        },
+        {
+            type: 'input',
+            name: 'employeeId',
+            message: 'What is your employee id?'
+
+        },
+        {
+            type: 'input',
+            name: 'employeeEmail',
+            message: 'What is your employee email?',
+            validate: (email) => {
+                if (validate.isEmail(email)) {
+                    return true
+                } else {
+                    return 'Please enter an email'
+                }
+
+            }
+        },
+        {
+            type: 'list',
+            name: 'role',
+            message: 'What is your employees role?',
+            choices: ['intern', 'engineer']
+
+        },
+        {
+            type: 'input',
+            name: 'internSchool',
+            message: 'What is your school?',
+            when: (responses) => {
+                if (responses.role == "intern") {
+                    return true;
+                }
+            }
+
+        },
+        {
+            type: 'input',
+            name: 'engineerGit',
+            message: 'What is your github?',
+            when: (responses) => {
+                if (responses.role == "engineer") {
+                    return true;
+                }
+            }
+
+        },
+        {
+            type: 'list',
+            name: 'managerEmployee',
+            message: 'Do you want to add more employees?',
+            choices: ['yes', 'no']
+
+        }
+    ]).then(answers => {
+        if (answers.role == 'engineer') {
+            engineerInfo = new Engineer(answers.employeeName, answers.employeeId, answers.employeeEmail, answers.engineerGit)
+            array.push(engineerInfo)
+        } else {
+            internInfo = new Intern(answers.employeeName, answers.employeeId, answers.employeeEmail, answers.internSchool)
+            array.push(internInfo)
+        }
+
+        console.log(managerInfo);
+        if (answers.managerEmployee == 'yes') {
+            createEmployee();
+        } else {
+            createHTML();
+        }
+    })
+}
+
+function createHTML() {
+    if (!fs.existsSync(OUTPUT_DIR)) {
+        fs.mkdirSync(OUTPUT_DIR);
+    }
+    //create the file html
+    fs.writeFileSync(outputPath, render(array), function (err) {
+        if (err) throw err;
+    });
+}
+
+
 appMenu();
+
 
 
 // Write code to use inquirer to gather information about the development team members,
