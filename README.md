@@ -14,3 +14,4 @@ node app.js
 * A walkthrough video that demonstrates the functionality of the Team Generator:
 [Walkthrough video using Screencastify](https://drive.google.com/file/d/12diujvEnpfefXAM6RMAECzVbPWta1nl7/view)
 
+![gif](Screen Shot 2021-01-26 at 8.00.19 PM.png)
